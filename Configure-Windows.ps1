@@ -2,6 +2,7 @@
 param(
     [switch] $SkipWinget,
     [switch] $SkipPowerShell,
+    [switch] $SkipTerminal,
     [switch] $SkipModules
 )
 
@@ -51,6 +52,14 @@ if (-not $SkipPowerShell) {
     & $pwshPath @pwshArguments
     if ($LASTEXITCODE -ne 0) {
         throw "PowerShell configuration failed (exit code $LASTEXITCODE)."
+    }
+
+    if (-not $SkipTerminal) {
+        Write-Host 'Configuring Windows Terminal font...'
+        & $pwshPath -NoLogo -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'windows/terminal/Configure-Terminal.ps1')
+        if ($LASTEXITCODE -ne 0) {
+            throw "Windows Terminal configuration failed (exit code $LASTEXITCODE)."
+        }
     }
 }
 else {

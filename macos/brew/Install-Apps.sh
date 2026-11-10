@@ -61,7 +61,7 @@ else
     "$brew_command" install powershell
     printf '%s\n' 'powershell installed.'
 fi
-casks=(visual-studio-code claude-code alt-tab)
+casks=(visual-studio-code claude-code alt-tab font-caskaydia-cove-nerd-font)
 for cask in "${casks[@]}"; do
     printf 'Checking %s... ' "$cask"
     if [ "$cask" = visual-studio-code ] &&

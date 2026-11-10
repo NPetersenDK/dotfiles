@@ -87,14 +87,14 @@ To load another module at startup, add its name to the `foreach` list in the pro
 Oh My Posh is installed through Homebrew or winget. Both shells use `~/.config/dotfiles/theme.omp.json`, copied from `common/oh-my-posh/theme.omp.json`. Rerun shell setup after editing the theme, then open a new terminal.
 
 - First line: Kubernetes context and namespace, Azure subscription, .NET SDK in .NET projects, and commands taking over two seconds.
-- Second line: user, host, path and Git status. The final `>` turns red after a failed command.
+- Second line: path and Git status. The final `>` turns red after a failed command.
 
 Without `oh-my-posh` in `PATH`, Bash uses a plain prompt and PowerShell its default.
 
 ### Font
 
-The theme requires `CaskaydiaCove Nerd Font Mono` for its icons and Powerline separators. Git uses the standard Oh My Posh status format: `?` untracked, `+` added, `~` modified and `-` deleted.
+The theme requires `CaskaydiaCove Nerd Font Mono` for its icons and Powerline separators. Git uses a logo and a compact posh-git-style summary: `[main ≡ +0 ~1 -0 | +1 ~0 -0 !]`. Green counts are staged; red counts are working changes. Empty groups are hidden; `|` appears only when both groups have changes. `+`, `~` and `-` count added, modified and deleted files. Untracked files count as added working files. `!N` counts conflicts; the final `!` marks working changes, or `~` marks staged-only changes. Clean repositories show only the branch and upstream status. `$N` counts stashes. Upstream status reflects local tracking refs, not a live fetch.
 
-- macOS: Homebrew installs `font-caskaydia-cove-nerd-font`. Terminal setup sets 13 pt and 120 columns for default/startup profiles and open windows. It exports the previous preferences to `~/.config/dotfiles/backups/Terminal.*` first.
+- macOS: Homebrew installs `font-caskaydia-cove-nerd-font`. Terminal setup sets 13 pt and 120 columns in the default and startup profiles for new windows. It does not iterate over open windows or tabs. It exports the previous preferences to `~/.config/dotfiles/backups/Terminal.*` first.
 - Windows: PowerShell setup runs `oh-my-posh font install CascadiaCode` if needed. Terminal setup selects the Mono face at 12 pt. It also updates explicit Caskaydia Nerd Font and Cascadia Mono overrides, preserving other fonts and per-profile sizes. A `settings.json.bak-<timestamp>` backup is saved first. Rewriting the JSON removes comments.
 - VS Code: set `terminal.integrated.fontFamily` to `CaskaydiaCove Nerd Font Mono` in user settings. Setup does not modify VS Code settings.

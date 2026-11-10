@@ -38,14 +38,7 @@ on run arguments
         set font size of startup settings to fontSize
         set number of columns of default settings to terminalColumns
         set number of columns of startup settings to terminalColumns
-        repeat with terminalWindow in windows
-            repeat with terminalTab in tabs of terminalWindow
-                set font name of terminalTab to fontName
-                set font size of terminalTab to fontSize
-            end repeat
-            set number of columns of terminalWindow to terminalColumns
-        end repeat
     end tell
 end run
 EOF
-printf 'Terminal now uses CaskaydiaCove Nerd Font Mono at %s pt and %s columns.\n' "$font_size" "$terminal_columns"
+printf 'New Terminal windows will use CaskaydiaCove Nerd Font Mono at %s pt and %s columns.\n' "$font_size" "$terminal_columns"

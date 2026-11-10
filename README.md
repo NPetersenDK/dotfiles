@@ -1,76 +1,79 @@
 # Dotfiles
 
-## Structure
+Same shell setup on macOS (Bash) and Windows (PowerShell 7): apps, Oh My Posh prompt, `sshi`, `k` alias with kubectl completion.
 
-- `Configure-macOS.sh`: runs the macOS Bash, Homebrew and shared PowerShell setup.
-- `Configure-Windows.ps1`: runs the Windows winget and shared PowerShell setup.
-- `macos/bash/`: Bash profile, prompt and `sshi` configuration.
-- `macos/brew/`: Homebrew, Git, Go, Azure CLI, kubectl, Helm, PowerShell, Copilot CLI, Docker CLI, VS Code, Claude Code and AltTab installation.
-- `windows/winget/`: PowerShell 7, Git, Go, Azure CLI, kubectl, Helm, Claude Code, GitHub Copilot and VS Code installation.
-- `common/PowerShell/`: shared PowerShell setup and module.
+## Layout
 
-## macOS setup
+| Path | Purpose |
+| --- | --- |
+| `Configure-macOS.sh` | Runs Bash, Homebrew and PowerShell setup |
+| `Configure-Windows.ps1` | Runs winget, PowerShell and Windows Terminal setup |
+| `macos/bash/` | Bash profile |
+| `macos/brew/` | Homebrew apps |
+| `windows/winget/` | winget apps. Add package IDs to `$AppIds` |
+| `windows/terminal/` | Windows Terminal font |
+| `common/PowerShell/` | PowerShell profile, `SSHYubi` module |
+| `common/oh-my-posh/` | Prompt theme for Bash and PowerShell |
 
-Run `bash ./Configure-macOS.sh` in a macOS terminal. It installs Homebrew if necessary, installs the apps listed above, changes the macOS login shell to `/bin/bash`, and sets a `username@hostname` Bash prompt. The Docker formula provides the CLI, not a Docker daemon or Docker Desktop. Homebrew and the shell change can request confirmation or authentication. A terminal configured to use a custom shell may need its own settings changed to use the login shell.
+## Setup
 
-Use `--skip-bash`, `--skip-brew`, `--skip-powershell` or `--skip-modules` to skip individual steps. `--skip-modules` skips PSGallery module installation while still configuring the PowerShell profile. Flags can be combined:
-
-```bash
-bash ./Configure-macOS.sh --skip-brew --skip-powershell
-bash ./Configure-macOS.sh --skip-brew --skip-modules
-```
-
-If Visual Studio Code already exists in `/Applications` or `~/Applications`, setup leaves that installation untouched; Homebrew does not manage its updates.
-
-If Docker Desktop or an existing `docker` command is found, setup skips the Docker formula. Homebrew does not manage an existing Docker Desktop installation.
-
-The script preserves existing Bash profile content and adds `sshi` for keys in `~/.ssh`. Press Tab after `sshi` to complete a key filename:
+macOS:
 
 ```bash
-sshi key1 user@1.2.3.4
+bash ./Configure-macOS.sh
 ```
 
-The macOS entry point also configures PowerShell. Open a new terminal after setup.
-
-## Windows setup
-
-Run the entry point from Windows PowerShell or PowerShell 7:
+Windows:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Configure-Windows.ps1
 ```
 
-Use `-SkipWinget`, `-SkipPowerShell` or `-SkipModules` to skip individual steps; the switches can be combined. `-SkipModules` skips PSGallery module installation while still configuring the PowerShell profile:
+Open a new terminal afterwards.
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Configure-Windows.ps1 -SkipWinget
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Configure-Windows.ps1 -SkipWinget -SkipModules
-```
+Skip steps with flags:
 
-When skipping Homebrew or winget but running PowerShell setup, PowerShell 7 must already be installed.
+| macOS | Windows | Skips |
+| --- | --- | --- |
+| `--skip-bash` | | Bash profile |
+| `--skip-brew` | `-SkipWinget` | App installation |
+| `--skip-powershell` | `-SkipPowerShell` | PowerShell profile, modules, font (Windows: also terminal) |
+| `--skip-modules` | `-SkipModules` | `Az` module |
+| | `-SkipTerminal` | Windows Terminal font |
 
-The script requires winget (App Installer) to install a missing PowerShell 7 or check additional listed applications. It installs PowerShell 7 if necessary and runs the shared setup using `pwsh`. Open a new PowerShell 7 session after setup. Loading the profile remains subject to your Windows execution policy.
+Skipping app installation still needs PowerShell 7 if PowerShell setup runs.
 
-Add more winget package IDs to the `$AppIds` array in `windows/winget/Install-Apps.ps1` to include additional applications in Windows setup.
+macOS changes the login shell to `/bin/bash`. Existing VS Code and Docker Desktop installs are left alone.
 
-## Shared PowerShell setup
+## PowerShell profile
 
-Both platform entry points install the local `SSHYubi` module and, if missing, the `Az` module from PSGallery for the current user. PSGallery installation requires network access. To run the shared setup separately from PowerShell 7:
+`common/PowerShell/Configure-PowerShell.ps1` can run alone in `pwsh`. It:
 
-```powershell
-./common/PowerShell/Configure-PowerShell.ps1
-```
+- Installs `SSHYubi` to `<profile dir>/Modules` and `Az` from PSGallery (current user).
+- Replaces the `# >>> Dotfiles >>>` block in `$PROFILE`. Other profile content is kept.
+- Prints the logo and `Loaded <module>` only in interactive sessions.
 
-The script installs the module in `$(Split-Path $PROFILE)/Modules/SSHYubi`, creates `$PROFILE` if it does not exist, and adds a managed Dotfiles block to the normal profile. The block imports the module, making `sshi` available. Existing profile content is preserved on later runs, and the block is replaced each time the script runs (an older block named SSHYubi is removed).
+To load another module at startup, add its name to the `foreach` list in the profile block. The module must be at `<profile dir>/Modules/<name>/<name>.psm1`.
 
-When PowerShell starts in an interactive terminal, the block prints `Loaded <module>` on its own line for each module it imports, and the PETERSEN logo last. Nothing is printed when the output is redirected, so scripts that start `pwsh` are not affected. To load another module at startup, add its name to the `foreach ($moduleName in 'SSHYubi')` list in `common/PowerShell/Configure-PowerShell.ps1`; the module must be in `$(Split-Path $PROFILE)/Modules/<name>/<name>.psm1`.
+## sshi and k
 
-Use the filename of a key directly inside `~/.ssh`, just as in Bash. Press Tab after `sshi` to complete a key filename:
+`sshi key user@host [args]` runs `ssh -i ~/.ssh/key`. Tab completes key filenames. Bash and PowerShell.
 
-```powershell
-sshi key1 user@1.2.3.4
-```
+`k` aliases `kubectl`. Tab completion is enabled when `kubectl` is installed.
 
-OpenSSH still applies its normal configuration and host-key checks.
+## Prompt
 
-In both Bash and PowerShell, `k` is an alias for `kubectl`. When `kubectl` is available at shell startup, its tab completion is enabled for both commands.
+Oh My Posh is installed with Homebrew or winget. Setup copies `common/oh-my-posh/theme.omp.json` to `~/.config/dotfiles/theme.omp.json`. Rerun setup after editing the theme. Open a new terminal to see the change.
+
+Line 1: kubectl context/namespace, Azure subscription, .NET SDK (in .NET projects), command time over 2 s. Line 2: user@host, path, Git status. `❯` is red after a failed command.
+
+Without `oh-my-posh` in `PATH`, Bash uses a plain prompt and PowerShell its default.
+
+Git tab completion from posh-git is not replaced.
+
+### Font
+
+The theme needs a Nerd Font. PowerShell setup runs `oh-my-posh font install CascadiaCode`, which installs `CaskaydiaCove Nerd Font` for the current user.
+
+- Windows Terminal: setup sets the font and size 12 in `profiles.defaults.font`. It writes `settings.json.bak-<timestamp>` first and drops comments from the file.
+- macOS terminals and VS Code (`terminal.integrated.fontFamily`): set `CaskaydiaCove Nerd Font` manually.

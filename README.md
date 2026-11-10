@@ -61,7 +61,9 @@ Both platform entry points install the local `SSHYubi` module and, if missing, t
 ./common/PowerShell/Configure-PowerShell.ps1
 ```
 
-The script installs the module in `$(Split-Path $PROFILE)/Modules/SSHYubi`, creates `$PROFILE` if it does not exist, and adds a managed SSHYubi block to the normal profile. The block imports the module, making `sshi` available. Existing profile content is preserved on later runs.
+The script installs the module in `$(Split-Path $PROFILE)/Modules/SSHYubi`, creates `$PROFILE` if it does not exist, and adds a managed Dotfiles block to the normal profile. The block imports the module, making `sshi` available. Existing profile content is preserved on later runs, and the block is replaced each time the script runs (an older block named SSHYubi is removed).
+
+When PowerShell starts in an interactive terminal, the block prints `Loaded <module>` on its own line for each module it imports, and the PETERSEN logo last. Nothing is printed when the output is redirected, so scripts that start `pwsh` are not affected. To load another module at startup, add its name to the `foreach ($moduleName in 'SSHYubi')` list in `common/PowerShell/Configure-PowerShell.ps1`; the module must be in `$(Split-Path $PROFILE)/Modules/<name>/<name>.psm1`.
 
 Use the filename of a key directly inside `~/.ssh`, just as in Bash. Press Tab after `sshi` to complete a key filename:
 

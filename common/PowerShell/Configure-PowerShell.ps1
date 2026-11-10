@@ -48,9 +48,18 @@ if (-not (Test-Path -LiteralPath $profilePath)) {
 
 $profileContent = Get-Content -LiteralPath $profilePath -Raw
 $profileBlock = @'
-# >>> SSHYubi >>>
-$sshYubiModule = Join-Path (Join-Path (Split-Path -Path $PROFILE) 'Modules/SSHYubi') 'SSHYubi.psm1'
-Import-Module -Name $sshYubiModule
+# >>> Dotfiles >>>
+# Print only in an interactive terminal, so a script that starts pwsh gets no banner.
+$showStartup = [Environment]::UserInteractive -and -not [Console]::IsOutputRedirected
+
+foreach ($moduleName in 'SSHYubi') {
+    $modulePath = Join-Path (Join-Path (Join-Path (Split-Path -Path $PROFILE) 'Modules') $moduleName) "$moduleName.psm1"
+    Import-Module -Name $modulePath
+    if ($showStartup) {
+        Write-Host "Loaded $moduleName"
+    }
+}
+
 Set-Alias -Name k -Value kubectl -Scope Global -Force
 if (Get-Command kubectl -CommandType Application -ErrorAction SilentlyContinue) {
     $kubectlCompletion = kubectl completion powershell | Out-String
@@ -62,14 +71,28 @@ if (Get-Command kubectl -CommandType Application -ErrorAction SilentlyContinue) 
         }
     }
 }
-# <<< SSHYubi <<<
+
+if ($showStartup) {
+    $petersenLogo = @(
+        '     ____  _____ _____ _____ ____  ____  _____ _   _ '
+        '    |  _ \| ____|_   _| ____|  _ \/ ___|| ____| \ | |'
+        '    | |_) |  _|   | | |  _| | |_) \___ \|  _| |  \| |'
+        '    |  __/| |___  | | | |___|  _ < ___) | |___| |\  |'
+        '    |_|   |_____| |_| |_____|_| \_|____/|_____|_| \_|'
+    )
+    Write-Host ''
+    Write-Host ($petersenLogo -join [Environment]::NewLine) -ForegroundColor Green
+    Write-Host ''
+}
+# <<< Dotfiles <<<
 '@
 
 if ($null -eq $profileContent) {
     $profileContent = ''
 }
 
-$profileContent = [regex]::Replace($profileContent, '(?ms)^# >>> SSHYubi >>>\r?\n.*?^# <<< SSHYubi <<<\r?\n?', '')
+# Replace this block on every run. The block used to be called SSHYubi, so remove that one too.
+$profileContent = [regex]::Replace($profileContent, '(?ms)^# >>> (?:Dotfiles|SSHYubi) >>>\r?\n.*?^# <<< (?:Dotfiles|SSHYubi) <<<\r?\n?', '')
 if ($profileContent.Length -gt 0 -and -not $profileContent.EndsWith("`n")) {
     $profileContent += [Environment]::NewLine
 }

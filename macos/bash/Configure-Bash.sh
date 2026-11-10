@@ -6,6 +6,8 @@ if [ "$(uname -s)" != 'Darwin' ]; then
     exit 1
 fi
 
+script_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
 printf '%s\n' 'Configuring Bash profile...'
 mkdir -p "$HOME/.config/dotfiles"
 cat > "$HOME/.config/dotfiles/bashrc" <<'EOF'
@@ -63,9 +65,17 @@ if [[ $- == *i* ]] && command -v kubectl >/dev/null 2>&1; then
 fi
 
 case $- in
-    *i*) PS1='\u@\h:\w\$ ' ;;
+    *i*)
+        if command -v oh-my-posh >/dev/null 2>&1; then
+            eval "$(oh-my-posh init bash --config "$HOME/.config/dotfiles/theme.omp.json")"
+        else
+            PS1='\u@\h:\w\$ '
+        fi
+        ;;
 esac
 EOF
+
+cp "$script_directory/../../common/oh-my-posh/theme.omp.json" "$HOME/.config/dotfiles/theme.omp.json"
 
 touch "$HOME/.bashrc" "$HOME/.bash_profile"
 if ! grep -Fxq '# >>> dotfiles bashrc >>>' "$HOME/.bashrc"; then

@@ -8,6 +8,25 @@ fi
 
 script_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
+if command -v brew >/dev/null 2>&1; then
+    brew_command=$(command -v brew)
+elif [ -x /opt/homebrew/bin/brew ]; then
+    brew_command=/opt/homebrew/bin/brew
+elif [ -x /usr/local/bin/brew ]; then
+    brew_command=/usr/local/bin/brew
+else
+    printf '%s\n' 'Homebrew is required. Run Configure-macOS.sh without --skip-brew first.' >&2
+    exit 1
+fi
+
+bash_path="$("$brew_command" --prefix)/bin/bash"
+if [ ! -x "$bash_path" ] ||
+   ! "$bash_path" --noprofile --norc -c '(( BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 2) ))'; then
+    printf '%s\n' 'Homebrew Bash 4.2 or newer is required. Run brew install bash, then rerun setup.' >&2
+    exit 1
+fi
+printf 'Using Bash: %s\n' "$bash_path"
+
 printf '%s\n' 'Configuring Bash profile...'
 mkdir -p "$HOME/.config/dotfiles"
 cat > "$HOME/.config/dotfiles/bashrc" <<'EOF'
@@ -66,10 +85,10 @@ fi
 
 case $- in
     *i*)
-        if command -v oh-my-posh >/dev/null 2>&1; then
+        PS1='\u@\h:\w\$ '
+        if (( BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 2) )) &&
+           command -v oh-my-posh >/dev/null 2>&1; then
             eval "$(oh-my-posh init bash --config "$HOME/.config/dotfiles/theme.omp.json")"
-        else
-            PS1='\u@\h:\w\$ '
         fi
         ;;
 esac
@@ -89,12 +108,17 @@ if ! grep -Fxq '# >>> dotfiles login >>>' "$HOME/.bash_profile"; then
         '# <<< dotfiles login <<<' >> "$HOME/.bash_profile"
 fi
 
+if ! grep -Fxq "$bash_path" /etc/shells; then
+    printf 'Registering %s in /etc/shells (requires administrator approval)...\n' "$bash_path"
+    printf '%s\n' "$bash_path" | sudo tee -a /etc/shells >/dev/null
+fi
+
 current_shell=$(dscl . -read "/Users/$(id -un)" UserShell | awk '{print $2}')
-if [ "$current_shell" != /bin/bash ]; then
-    printf '%s\n' 'Changing your macOS login shell to /bin/bash.'
-    chsh -s /bin/bash
+if [ "$current_shell" != "$bash_path" ]; then
+    printf 'Changing your macOS login shell to %s...\n' "$bash_path"
+    chsh -s "$bash_path"
 else
-    printf '%s\n' 'Login shell: /bin/bash is already configured.'
+    printf 'Login shell: %s is already configured.\n' "$bash_path"
 fi
 
 printf '%s\n' 'Bash setup complete.'

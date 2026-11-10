@@ -31,16 +31,16 @@ fi
 trap 'printf "\n%s\n" "macOS setup interrupted." >&2; exit 130' INT
 
 script_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-if [ "$skip_bash" = false ]; then
-    /bin/bash "$script_directory/macos/bash/Configure-Bash.sh"
-else
-    printf '%s\n' 'Skipping Bash setup.'
-fi
-
 if [ "$skip_brew" = false ]; then
     /bin/bash "$script_directory/macos/brew/Install-Apps.sh"
 else
     printf '%s\n' 'Skipping Homebrew app installation.'
+fi
+
+if [ "$skip_bash" = false ]; then
+    /bin/bash "$script_directory/macos/bash/Configure-Bash.sh"
+else
+    printf '%s\n' 'Skipping Bash setup.'
 fi
 
 if [ "$skip_powershell" = false ]; then

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string] $FontFace = 'CaskaydiaCove Nerd Font',
+    [string] $FontFace = 'Cascadia Mono',
     [int] $FontSize = 12
 )
 
@@ -37,13 +37,19 @@ foreach ($settingsPath in $settingsPaths) {
         if (-not $defaults.PSObject.Properties['font']) {
             Add-Member -InputObject $defaults -NotePropertyName font -NotePropertyValue ([pscustomobject]@{})
         }
-        if ($defaults.font.face -eq $FontFace -and $defaults.font.size -eq $FontSize) {
+        $fontOverrides = @($settings.profiles.list | Where-Object {
+            $_.font.face -like 'Caskaydia*Nerd*' -and $_.font.face -ne $FontFace
+        })
+        if ($defaults.font.face -eq $FontFace -and $defaults.font.size -eq $FontSize -and $fontOverrides.Count -eq 0) {
             Write-Host "Windows Terminal already uses $FontFace $FontSize ($settingsPath)."
             continue
         }
 
         Add-Member -InputObject $defaults.font -NotePropertyName face -NotePropertyValue $FontFace -Force
         Add-Member -InputObject $defaults.font -NotePropertyName size -NotePropertyValue $FontSize -Force
+        foreach ($profile in $fontOverrides) {
+            Add-Member -InputObject $profile.font -NotePropertyName face -NotePropertyValue $FontFace -Force
+        }
         $backupPath = "$settingsPath.bak-$(Get-Date -Format 'yyyyMMddHHmmss')"
         Copy-Item -LiteralPath $settingsPath -Destination $backupPath
         $settings | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $settingsPath -Encoding utf8

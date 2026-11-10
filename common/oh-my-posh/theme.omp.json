@@ -9,38 +9,34 @@
       "segments": [
         {
           "type": "kubectl",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
+          "style": "plain",
           "background": "#E5C07B",
           "foreground": "#193549",
-          "template": " \udb84\udcfe {{ .Context }}{{ if .Namespace }}/{{ .Namespace }}{{ end }} ",
+          "template": " k8s:{{ .Context }}{{ if .Namespace }}/{{ .Namespace }}{{ end }} ",
           "options": {
             "parse_kubeconfig": true
           }
         },
         {
           "type": "az",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
+          "style": "plain",
           "background": "#56B6C2",
           "foreground": "#193549",
-          "template": " \uebd8 {{ .Name }} "
+          "template": " az:{{ .Name }} "
         },
         {
           "type": "dotnet",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
+          "style": "plain",
           "background": "#7B61FF",
           "foreground": "#ffffff",
-          "template": " \ue77f {{ .Full }} "
+          "template": " dotnet:{{ .Full }} "
         },
         {
           "type": "executiontime",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
+          "style": "plain",
           "background": "#3E4451",
           "foreground": "#ffffff",
-          "template": " {{ .FormattedMs }} ",
+          "template": " time:{{ .FormattedMs }} ",
           "options": {
             "threshold": 2000,
             "style": "austin"
@@ -55,38 +51,42 @@
       "segments": [
         {
           "type": "session",
-          "style": "diamond",
+          "style": "plain",
           "background": "#61AFEF",
           "foreground": "#ffffff",
-          "leading_diamond": "\ue0b6",
-          "trailing_diamond": "\ue0b0",
           "template": " {{ .UserName }}@{{ .HostName }} "
         },
         {
           "type": "path",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
+          "style": "plain",
           "background": "#C678DD",
           "foreground": "#ffffff",
           "template": " {{ .Path }} ",
           "options": {
             "style": "agnoster_short",
+            "folder_separator_icon": "/",
             "max_depth": 3
           }
         },
         {
           "type": "git",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
+          "style": "plain",
           "background": "#95ffa4",
           "background_templates": [
             "{{ if gt .Behind 0 }}#FF6471{{ end }}",
             "{{ if or .Working.Changed .Staging.Changed }}#FFD866{{ end }}"
           ],
           "foreground": "#193549",
-          "template": " {{ .HEAD }}{{ if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}{{ if and .Working.Changed .Staging.Changed }} |{{ end }}{{ if .Staging.Changed }} {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} ${{ .StashCount }}{{ end }} ",
+          "template": " git:{{ .HEAD }}{{ if gt .Ahead 0 }} >{{ .Ahead }}{{ end }}{{ if gt .Behind 0 }} <{{ .Behind }}{{ end }}{{ if and .Upstream (not .UpstreamGone) (eq .Ahead 0) (eq .Behind 0) }} ={{ end }}{{ if .Staging.Changed }} [S {{ .Staging.String }}]{{ end }}{{ if .Working.Changed }} [W {{ .Working.String }}]{{ end }}{{ if gt .StashCount 0 }} ${{ .StashCount }}{{ end }} ",
           "options": {
-            "branch_icon": "\uf418 ",
+            "branch_icon": "",
+            "commit_icon": "commit:",
+            "tag_icon": "tag:",
+            "rebase_icon": "rebase:",
+            "cherry_pick_icon": "cherry-pick:",
+            "revert_icon": "revert:",
+            "merge_icon": "merge:",
+            "no_commits_icon": "new:",
             "branch_max_length": 40,
             "fetch_status": true
           }
@@ -98,7 +98,7 @@
           "foreground_templates": [
             "{{ if gt .Code 0 }}#FF6471{{ end }}"
           ],
-          "template": " \u276f"
+          "template": " >"
         }
       ]
     }

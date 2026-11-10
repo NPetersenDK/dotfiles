@@ -37,13 +37,13 @@ Skip steps with flags:
 | --- | --- | --- |
 | `--skip-bash` | | Bash profile |
 | `--skip-brew` | `-SkipWinget` | App installation |
-| `--skip-powershell` | `-SkipPowerShell` | PowerShell profile, modules, font (Windows: also terminal) |
+| `--skip-powershell` | `-SkipPowerShell` | PowerShell profile, modules (Windows: also terminal) |
 | `--skip-modules` | `-SkipModules` | `Az` module |
 | | `-SkipTerminal` | Windows Terminal font |
 
 Skipping app installation still needs PowerShell 7 if PowerShell setup runs.
 
-macOS changes the login shell to `/bin/bash`. Existing VS Code and Docker Desktop installs are left alone.
+macOS installs Homebrew Bash before configuring it as the login shell. Registering it in `/etc/shells` may require administrator approval. With `--skip-brew`, Homebrew Bash must already be installed. Existing VS Code and Docker Desktop installs are left alone.
 
 ## PowerShell profile
 
@@ -65,7 +65,7 @@ To load another module at startup, add its name to the `foreach` list in the pro
 
 Oh My Posh is installed with Homebrew or winget. Setup copies `common/oh-my-posh/theme.omp.json` to `~/.config/dotfiles/theme.omp.json`. Rerun setup after editing the theme. Open a new terminal to see the change.
 
-Line 1: kubectl context/namespace, Azure subscription, .NET SDK (in .NET projects), command time over 2 s. Line 2: user@host, path, Git status. `❯` is red after a failed command.
+Line 1: kubectl context/namespace, Azure subscription, .NET SDK (in .NET projects), command time over 2 s. Line 2: user@host, path, Git status. `>` is red after a failed command.
 
 Without `oh-my-posh` in `PATH`, Bash uses a plain prompt and PowerShell its default.
 
@@ -73,7 +73,7 @@ Git tab completion from posh-git is not replaced.
 
 ### Font
 
-The theme needs a Nerd Font. PowerShell setup runs `oh-my-posh font install CascadiaCode`, which installs `CaskaydiaCove Nerd Font` for the current user.
+The theme uses plain-text labels (`k8s:`, `az:`, `dotnet:` and `git:`) and ASCII separators, so a Nerd Font is not required. Setup does not install fonts or delete existing font files.
 
-- Windows Terminal: setup sets the font and size 12 in `profiles.defaults.font`. It writes `settings.json.bak-<timestamp>` first and drops comments from the file.
-- macOS terminals and VS Code (`terminal.integrated.fontFamily`): set `CaskaydiaCove Nerd Font` manually.
+- Windows Terminal: setup sets `Cascadia Mono` and size 12 in `profiles.defaults.font`. Explicit Caskaydia Nerd Font profile overrides are changed too; other fonts and per-profile sizes are preserved. It writes `settings.json.bak-<timestamp>` first and drops comments from the file.
+- macOS Terminal: the standard `SFMono-Regular` font works. VS Code can use its default terminal font.

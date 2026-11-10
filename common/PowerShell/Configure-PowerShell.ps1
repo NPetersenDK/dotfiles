@@ -49,25 +49,6 @@ if (-not (Test-Path -LiteralPath $themeSource -PathType Leaf)) {
 New-Item -ItemType Directory -Path $themeDirectory -Force | Out-Null
 Copy-Item -LiteralPath $themeSource -Destination (Join-Path $themeDirectory 'theme.omp.json') -Force
 
-$fontDirectory = if ($IsWindows) { Join-Path $env:LOCALAPPDATA 'Microsoft/Windows/Fonts' } else { Join-Path $HOME 'Library/Fonts' }
-if (Get-ChildItem -Path $fontDirectory -Filter 'Caskaydia*Nerd*' -ErrorAction SilentlyContinue) {
-    Write-Host 'CaskaydiaCove Nerd Font already installed.'
-}
-else {
-    $ompCommand = Get-Command oh-my-posh -CommandType Application -ErrorAction SilentlyContinue
-    $ompPath = if ($ompCommand) { $ompCommand.Source } elseif ($IsWindows) { Join-Path $env:LOCALAPPDATA 'Programs/oh-my-posh/bin/oh-my-posh.exe' }
-    if ($ompPath -and (Test-Path -LiteralPath $ompPath -PathType Leaf)) {
-        Write-Host 'Installing CaskaydiaCove Nerd Font with Oh My Posh...'
-        & $ompPath font install CascadiaCode
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Font installation failed (exit code $LASTEXITCODE). Run 'oh-my-posh font install CascadiaCode' manually."
-        }
-    }
-    else {
-        Write-Warning 'oh-my-posh was not found, so no Nerd Font was installed.'
-    }
-}
-
 New-Item -ItemType Directory -Path $profileDirectory -Force | Out-Null
 if (-not (Test-Path -LiteralPath $profilePath)) {
     New-Item -ItemType File -Path $profilePath | Out-Null

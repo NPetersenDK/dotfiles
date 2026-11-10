@@ -33,7 +33,7 @@ fi
 
 printf '%s\n' 'Homebrew is available.'
 eval "$("$brew_command" shellenv)"
-formulae=(git go azure-cli kubectl helm copilot-cli docker)
+formulae=(git go azure-cli kubectl helm copilot-cli docker oh-my-posh)
 for formula in "${formulae[@]}"; do
     printf 'Checking %s... ' "$formula"
     if [ "$formula" = docker ] &&

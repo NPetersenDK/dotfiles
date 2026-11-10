@@ -1,35 +1,46 @@
 # Dotfiles
 
-Same shell setup on macOS (Bash) and Windows (PowerShell 7): apps, Oh My Posh prompt, `sshi`, `k` alias with kubectl completion.
+App installation and shell configuration for macOS and Windows. Includes an Oh My Posh theme, SSH key completion and a `k` alias for `kubectl`.
 
 ## Layout
 
 | Path | Purpose |
 | --- | --- |
-| `Configure-macOS.sh` | Runs Bash, Homebrew and PowerShell setup |
+| `Configure-macOS.sh` | Runs Homebrew, Bash, PowerShell and Terminal setup |
 | `Configure-Windows.ps1` | Runs winget, PowerShell and Windows Terminal setup |
 | `macos/bash/` | Bash profile |
 | `macos/brew/` | Homebrew apps |
-| `windows/winget/` | winget apps. Add package IDs to `$AppIds` |
+| `macos/terminal/` | Terminal font, size and window width |
+| `windows/winget/` | winget apps |
 | `windows/terminal/` | Windows Terminal font |
 | `common/PowerShell/` | PowerShell profile, `SSHYubi` module |
 | `common/oh-my-posh/` | Prompt theme for Bash and PowerShell |
 
 ## Setup
 
-macOS:
+Run from the repository root. Setup installs missing apps and updates the shell profiles. Other profile content is preserved.
+
+### macOS
 
 ```bash
 bash ./Configure-macOS.sh
 ```
 
-Windows:
+Homebrew installs Bash before it is set as the login shell. Registering Bash in `/etc/shells` requires administrator approval. Terminal font changes may require permission to control Terminal.
+
+Existing VS Code and Docker Desktop installations are kept. The Docker formula installs only the CLI, not a local daemon.
+
+### Windows
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Configure-Windows.ps1
 ```
 
-Open a new terminal afterwards.
+Requires winget from App Installer when apps need to be checked or installed. The entry script can run in Windows PowerShell 5.1; profile and Terminal setup run in PowerShell 7. Profile loading follows your Windows execution policy.
+
+Open a new terminal after setup on either platform.
+
+### Skip steps
 
 Skip steps with flags:
 
@@ -39,41 +50,51 @@ Skip steps with flags:
 | `--skip-brew` | `-SkipWinget` | App installation |
 | `--skip-powershell` | `-SkipPowerShell` | PowerShell profile, modules (Windows: also terminal) |
 | `--skip-modules` | `-SkipModules` | `Az` module |
-| | `-SkipTerminal` | Windows Terminal font |
+| `--skip-terminal` | `-SkipTerminal` | Terminal font settings |
 
-Skipping app installation still needs PowerShell 7 if PowerShell setup runs.
+`--skip-modules` and `-SkipModules` skip PSGallery installation, not local modules or fonts.
 
-macOS installs Homebrew Bash before configuring it as the login shell. Registering it in `/etc/shells` may require administrator approval. With `--skip-brew`, Homebrew Bash must already be installed. Existing VS Code and Docker Desktop installs are left alone.
+With app installation skipped, PowerShell 7 must already be installed if its setup runs. On macOS, Bash setup also needs Homebrew Bash, and Terminal setup needs the Nerd Font.
+
+Add Homebrew packages to `formulae` or `casks` in `macos/brew/Install-Apps.sh`. Add winget IDs to `$AppIds` in `windows/winget/Install-Apps.ps1`.
 
 ## PowerShell profile
 
-`common/PowerShell/Configure-PowerShell.ps1` can run alone in `pwsh`. It:
+Run separately in PowerShell 7:
 
-- Installs `SSHYubi` to `<profile dir>/Modules` and `Az` from PSGallery (current user).
-- Replaces the `# >>> Dotfiles >>>` block in `$PROFILE`. Other profile content is kept.
-- Prints the logo and `Loaded <module>` only in interactive sessions.
+```powershell
+./common/PowerShell/Configure-PowerShell.ps1 -SkipModules
+```
+
+The script:
+
+- Copies `SSHYubi` to `<profile dir>/Modules` and the theme to `~/.config/dotfiles`.
+- Installs `Az` from PSGallery for the current user unless `-SkipModules` is set.
+- Installs the Nerd Font on Windows if missing.
+- Updates the `# >>> Dotfiles >>>` block in `$PROFILE` without replacing other content.
+- Shows the startup logo and module name when output is interactive and not redirected.
 
 To load another module at startup, add its name to the `foreach` list in the profile block. The module must be at `<profile dir>/Modules/<name>/<name>.psm1`.
 
 ## sshi and k
 
-`sshi key user@host [args]` runs `ssh -i ~/.ssh/key`. Tab completes key filenames. Bash and PowerShell.
+`sshi key user@host [args]` runs `ssh -i ~/.ssh/key user@host [args]` in Bash and PowerShell. Tab completes filenames in `~/.ssh`. Normal SSH configuration still applies.
 
-`k` aliases `kubectl`. Tab completion is enabled when `kubectl` is installed.
+`k` aliases `kubectl`. Completion is loaded when `kubectl` is available at shell startup.
 
 ## Prompt
 
-Oh My Posh is installed with Homebrew or winget. Setup copies `common/oh-my-posh/theme.omp.json` to `~/.config/dotfiles/theme.omp.json`. Rerun setup after editing the theme. Open a new terminal to see the change.
+Oh My Posh is installed through Homebrew or winget. Both shells use `~/.config/dotfiles/theme.omp.json`, copied from `common/oh-my-posh/theme.omp.json`. Rerun shell setup after editing the theme, then open a new terminal.
 
-Line 1: kubectl context/namespace, Azure subscription, .NET SDK (in .NET projects), command time over 2 s. Line 2: user@host, path, Git status. `>` is red after a failed command.
+- First line: Kubernetes context and namespace, Azure subscription, .NET SDK in .NET projects, and commands taking over two seconds.
+- Second line: user, host, path and Git status. The final `>` turns red after a failed command.
 
 Without `oh-my-posh` in `PATH`, Bash uses a plain prompt and PowerShell its default.
 
-Git tab completion from posh-git is not replaced.
-
 ### Font
 
-The theme uses plain-text labels (`k8s:`, `az:`, `dotnet:` and `git:`) and ASCII separators, so a Nerd Font is not required. Setup does not install fonts or delete existing font files.
+The theme requires `CaskaydiaCove Nerd Font Mono` for its icons and Powerline separators. Git uses the standard Oh My Posh status format: `?` untracked, `+` added, `~` modified and `-` deleted.
 
-- Windows Terminal: setup sets `Cascadia Mono` and size 12 in `profiles.defaults.font`. Explicit Caskaydia Nerd Font profile overrides are changed too; other fonts and per-profile sizes are preserved. It writes `settings.json.bak-<timestamp>` first and drops comments from the file.
-- macOS Terminal: the standard `SFMono-Regular` font works. VS Code can use its default terminal font.
+- macOS: Homebrew installs `font-caskaydia-cove-nerd-font`. Terminal setup sets 13 pt and 120 columns for default/startup profiles and open windows. It exports the previous preferences to `~/.config/dotfiles/backups/Terminal.*` first.
+- Windows: PowerShell setup runs `oh-my-posh font install CascadiaCode` if needed. Terminal setup selects the Mono face at 12 pt. It also updates explicit Caskaydia Nerd Font and Cascadia Mono overrides, preserving other fonts and per-profile sizes. A `settings.json.bak-<timestamp>` backup is saved first. Rewriting the JSON removes comments.
+- VS Code: set `terminal.integrated.fontFamily` to `CaskaydiaCove Nerd Font Mono` in user settings. Setup does not modify VS Code settings.

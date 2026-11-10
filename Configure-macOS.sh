@@ -5,6 +5,7 @@ skip_bash=false
 skip_brew=false
 skip_powershell=false
 skip_modules=false
+skip_terminal=false
 
 for argument in "$@"; do
     case "$argument" in
@@ -12,8 +13,9 @@ for argument in "$@"; do
         --skip-brew) skip_brew=true ;;
         --skip-powershell) skip_powershell=true ;;
         --skip-modules) skip_modules=true ;;
+        --skip-terminal) skip_terminal=true ;;
         -h|--help)
-            printf '%s\n' 'Usage: bash Configure-macOS.sh [--skip-bash] [--skip-brew] [--skip-powershell] [--skip-modules]'
+            printf '%s\n' 'Usage: bash Configure-macOS.sh [--skip-bash] [--skip-brew] [--skip-powershell] [--skip-modules] [--skip-terminal]'
             exit 0
             ;;
         *)
@@ -79,6 +81,12 @@ if [ "$skip_powershell" = false ]; then
     trap - EXIT
 else
     printf '%s\n' 'Skipping PowerShell setup.'
+fi
+
+if [ "$skip_terminal" = false ]; then
+    /bin/bash "$script_directory/macos/terminal/Configure-Terminal.sh"
+else
+    printf '%s\n' 'Skipping macOS Terminal font setup.'
 fi
 
 printf '%s\n' 'macOS setup complete.'

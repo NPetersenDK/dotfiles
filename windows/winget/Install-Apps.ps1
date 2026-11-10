@@ -10,6 +10,7 @@ param(
         'Anthropic.ClaudeCode'
         'GitHub.Copilot'
         'Microsoft.VisualStudioCode'
+        'JanDeDobbeleer.OhMyPosh'
     )
 )
 

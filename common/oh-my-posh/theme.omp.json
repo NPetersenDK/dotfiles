@@ -54,14 +54,6 @@
       "newline": true,
       "segments": [
         {
-          "type": "session",
-          "style": "powerline",
-          "powerline_symbol": "\ue0b0",
-          "background": "#61AFEF",
-          "foreground": "#ffffff",
-          "template": " {{ .UserName }}@{{ .HostName }} "
-        },
-        {
           "type": "path",
           "style": "powerline",
           "powerline_symbol": "\ue0b0",
@@ -84,8 +76,16 @@
             "{{ if or .Working.Changed .Staging.Changed }}#FFD866{{ end }}"
           ],
           "foreground": "#193549",
-          "template": " {{ .HEAD }}{{ if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and .Working.Changed .Staging.Changed }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \uf0c7 {{ .StashCount }}{{ end }} ",
+          "template": " [{{ .HEAD }}{{ if .Upstream }} {{ .BranchStatus }}{{ end }}{{ if .Staging.Changed }} <#12522C>+{{ .Staging.Added }} ~{{ .Staging.Modified }} -{{ .Staging.Deleted }}{{ if gt .Staging.Unmerged 0 }} !{{ .Staging.Unmerged }}{{ end }}</>{{ end }}{{ if and .Staging.Changed .Working.Changed }} |{{ end }}{{ if .Working.Changed }} <#9C1733>+{{ add .Working.Added .Working.Untracked }} ~{{ .Working.Modified }} -{{ .Working.Deleted }}{{ if gt .Working.Unmerged 0 }} !{{ .Working.Unmerged }}{{ end }} !</>{{ else if .Staging.Changed }} ~{{ end }}{{ if gt .StashCount 0 }} ${{ .StashCount }}{{ end }}] ",
           "options": {
+            "branch_icon": "\uf418 ",
+            "commit_icon": "commit:",
+            "tag_icon": "tag:",
+            "rebase_icon": "rebase:",
+            "cherry_pick_icon": "cherry-pick:",
+            "revert_icon": "revert:",
+            "merge_icon": "merge:",
+            "no_commits_icon": "new:",
             "branch_max_length": 40,
             "fetch_status": true
           }

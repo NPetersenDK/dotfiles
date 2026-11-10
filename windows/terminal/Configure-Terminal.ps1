@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string] $FontFace = 'Cascadia Mono',
+    [string] $FontFace = 'CaskaydiaCove Nerd Font Mono',
     [int] $FontSize = 12
 )
 
@@ -38,7 +38,7 @@ foreach ($settingsPath in $settingsPaths) {
             Add-Member -InputObject $defaults -NotePropertyName font -NotePropertyValue ([pscustomobject]@{})
         }
         $fontOverrides = @($settings.profiles.list | Where-Object {
-            $_.font.face -like 'Caskaydia*Nerd*' -and $_.font.face -ne $FontFace
+            ($_.font.face -like 'Caskaydia*Nerd*' -or $_.font.face -eq 'Cascadia Mono') -and $_.font.face -ne $FontFace
         })
         if ($defaults.font.face -eq $FontFace -and $defaults.font.size -eq $FontSize -and $fontOverrides.Count -eq 0) {
             Write-Host "Windows Terminal already uses $FontFace $FontSize ($settingsPath)."

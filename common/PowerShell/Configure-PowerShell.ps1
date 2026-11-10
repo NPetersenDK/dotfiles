@@ -49,6 +49,30 @@ if (-not (Test-Path -LiteralPath $themeSource -PathType Leaf)) {
 New-Item -ItemType Directory -Path $themeDirectory -Force | Out-Null
 Copy-Item -LiteralPath $themeSource -Destination (Join-Path $themeDirectory 'theme.omp.json') -Force
 
+if ($IsWindows) {
+    $fontDirectory = Join-Path $env:LOCALAPPDATA 'Microsoft/Windows/Fonts'
+    $systemFontDirectory = Join-Path $env:WINDIR 'Fonts'
+    $fontPaths = @(
+        Join-Path $fontDirectory 'CaskaydiaCoveNerdFontMono-Regular.ttf'
+        Join-Path $systemFontDirectory 'CaskaydiaCoveNerdFontMono-Regular.ttf'
+    )
+    if ($fontPaths | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf }) {
+        Write-Host 'CaskaydiaCove Nerd Font Mono is already installed.'
+    }
+    else {
+        $ompCommand = Get-Command oh-my-posh -CommandType Application -ErrorAction SilentlyContinue
+        $ompPath = if ($ompCommand) { $ompCommand.Source } else { Join-Path $env:LOCALAPPDATA 'Programs/oh-my-posh/bin/oh-my-posh.exe' }
+        if (-not (Test-Path -LiteralPath $ompPath -PathType Leaf)) {
+            throw 'oh-my-posh was not found. Run Windows setup without -SkipWinget to install it.'
+        }
+        Write-Host 'Installing CaskaydiaCove Nerd Font Mono...'
+        & $ompPath font install CascadiaCode
+        if ($LASTEXITCODE -ne 0) {
+            throw "Nerd Font installation failed (exit code $LASTEXITCODE)."
+        }
+    }
+}
+
 New-Item -ItemType Directory -Path $profileDirectory -Force | Out-Null
 if (-not (Test-Path -LiteralPath $profilePath)) {
     New-Item -ItemType File -Path $profilePath | Out-Null
@@ -57,7 +81,7 @@ if (-not (Test-Path -LiteralPath $profilePath)) {
 $profileContent = Get-Content -LiteralPath $profilePath -Raw
 $profileBlock = @'
 # >>> Dotfiles >>>
-# Skip the banner when output is redirected.
+# Show startup messages only in an interactive terminal.
 $showStartup = [Environment]::UserInteractive -and -not [Console]::IsOutputRedirected
 
 foreach ($moduleName in 'SSHYubi') {
@@ -103,7 +127,7 @@ if ($null -eq $profileContent) {
     $profileContent = ''
 }
 
-# Replace the managed block. The old SSHYubi block name is removed too.
+# Replace the current or legacy profile block; keep other content.
 $profileContent = [regex]::Replace($profileContent, '(?ms)^# >>> (?:Dotfiles|SSHYubi) >>>\r?\n.*?^# <<< (?:Dotfiles|SSHYubi) <<<\r?\n?', '')
 if ($profileContent.Length -gt 0 -and -not $profileContent.EndsWith("`n")) {
     $profileContent += [Environment]::NewLine
